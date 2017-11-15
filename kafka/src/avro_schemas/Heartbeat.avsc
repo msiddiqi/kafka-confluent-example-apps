@@ -1,0 +1,8 @@
+{
+   "type" : "record",
+   "namespace" : "org.mehrofiq",
+   "name" : "SensorHeartbeat",
+   "fields" : [
+      { "name" : "SensorId" , "type" : "string" }
+   ]
+}
