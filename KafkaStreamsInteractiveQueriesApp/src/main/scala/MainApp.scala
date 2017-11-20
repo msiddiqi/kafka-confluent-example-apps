@@ -1,15 +1,18 @@
 import java.lang
+import java.util.concurrent.TimeUnit
 import java.util.{Timer, TimerTask}
 
 import MainApp.kafkaStreams
+import ch.qos.logback.core.util.TimeUtil
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.{KafkaStreams, KeyValue, StreamsConfig}
-import org.apache.kafka.streams.kstream.{KGroupedStream, KStream, KStreamBuilder, KTable}
+import org.apache.kafka.streams.kstream._
 import org.apache.kafka.streams.processor.TopologyBuilder.AutoOffsetReset
 import org.apache.kafka.streams.state.{KeyValueIterator, QueryableStoreTypes, ReadOnlyKeyValueStore}
 import org.mehrofiq.KafkaStreamsInteractiveQueriesApp.{SerdeBuilder, SerdeBuilderImpl}
 import org.mehrofiq.SensorHeartbeat
 import org.mehrofiq.kafkaMergerApp.ConfluentProperties
+
 import scala.collection.JavaConverters._
 
 object MainApp extends App {
@@ -56,6 +59,15 @@ object MainApp extends App {
 
   val countTable: KTable[String, java.lang.Long] =
     mergedStreamTable.count((countStoreName))
+
+  val timeWindowStoreName = "mehrofiq-countStore-timeWindow"
+  val countStoreForLastEightHours =
+    mergedStreamTable.count(TimeWindows.of(TimeUnit.HOURS.toMillis(8)) , timeWindowStoreName)
+
+  val sessionWindowStoreName = "mehrofiq-countStore-sessionWindow"
+  val countForSession =
+    mergedStreamTable.count(SessionWindows.`with`(1000) , timeWindowStoreName)
+
 
   setupLocalStoreTimer()
   setupCountStoreTimer()
